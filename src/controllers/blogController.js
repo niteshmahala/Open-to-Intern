@@ -12,7 +12,7 @@ const createBlog = async function (req , res) {
         let data = req.body
 
          // Validate the blog data is present or not
-        if (Object.keys(data).length == 0) { 
+        if (!data) { 
             return res.status(400).send({ status: false, msg: "Invalid request !! Please Provide Blog Details"})
           }
        
@@ -67,38 +67,27 @@ const createBlog = async function (req , res) {
 const getBlogs = async function (req , res) {
     try{
         
+        if(!req.query){
+            return res.status(404).send({status: false , msg:''})
+        }
         let queryData = req.query
-
-        let blog = queryData
 
         if(!(queryData.authorId || queryData.category || queryData.tags || queryData.subcategory ) ){
             return res.status(400).send( {status: false , msg: "Invalid Filters"})
         }
 
-
-        if(blog.category == '' || typeof(blog.category) != String){
-            return res.status(400).send( {status: false , msg: 'category is Invalid'})
+        if(req.query.title && !req.query.body) delete req.query.title
+        else if(req.query.body && !req.query.title) delete req.query.body
+        else if(req.query.title && req.query.body){
+            delete req.query.title
+            delete req.query.body
         }
 
+        queryData = req.query
 
-        if(blog.authorId == '' || !(ObjectId.isValid(blog.authorId))){
+        if(!(ObjectId.isValid(queryData.authorId))){
             return res.status(400).send( {status: false, msg: 'authorId is Invalid'})
         }
-
-        let tagsArr = blog.tags
-        if(tagsArr.length == 0 || Array.isArray(tagsArr) || function check(tagsArr) {
-            return tagsArr.every(i => (typeof i === "string"));
-        } == false){
-            res.status(400).send({ status: false , msg: 'tags are Invalid'})
-        }
-
-        let subCatArr = blog.subcategory
-        if(subCatArr.length == 0 || Array.isArray(subCatArr) || !function check(subCatArr) {
-            return subCatArr.every(i => (typeof i === "string"));
-        } == false){
-            res.status(400).send({ status: false , msg: 'subcategory must be present'})
-        }
-
 
         let authorId = await authorModel.findById(queryData.authorId)
 
@@ -110,7 +99,8 @@ const getBlogs = async function (req , res) {
             queryData.isDeleted = false
             queryData.isPublished = true
             const blogData = await blogModel.find( queryData )
-            if(blogData.length == 0 || blogData.isDeleted == true){
+            console.log(blogData);
+            if(blogData.length == 0){
                 return res.status(404).send({status: false , msg: 'No Document Found'})
             } 
             return res.status(200).send({status: true , Data: blogData})
@@ -130,7 +120,6 @@ const updateBlogs = async function ( req , res) {
             return res.status(400).send( {status: false , msg: "Invalid Filters"})
         }
 
-
         let blogId = req.params.blogId
 
         if (Object.keys(blog).length == 0) { 
@@ -141,40 +130,12 @@ const updateBlogs = async function ( req , res) {
             return res.status(400).send({status: false , msg:"Invalid Blog-Id"})
         }
 
-        if(blog.title = '' || typeof(blog.title) != String){
-            return res.status(400).send( {status: false , msg: 'Title is Invalid'})
-        }
-
-        if(blog.body = '' || typeof(blog.body) != String){
-            return res.status(400).send( {status: false , msg: 'Body is Invalid'})
-        }
-
-
-        let tagsArr = blog.tags
-        if(tagsArr.length == 0 || Array.isArray(tagsArr) || function check(tagsArr) {
-            return tagsArr.every(i => (typeof i === "string"));
-        } == false){
-            return res.status(400).send({ status: false , msg: 'tags are Invalid'})
-        }
-
-        let subCatArr = blog.subcategory
-        if(subCatArr.length == 0 || Array.isArray(subCatArr) || !function check(subCatArr) {
-            return subCatArr.every(i => (typeof i === "string"));
-        } == false){
-            return res.status(400).send({ status: false , msg: 'subcategory must be present'})
-        }
-
-        if(typeof(blog.isPublished) != Boolean){
-            return res.status(400).send( { status: false , msg: 'isPublished is Invalid'})
-        }
-
-
         let blogData = await blogModel.findById(blogId)
         if(!blogData || blogData.isDeleted == true){
             return res.status(404).send({status: false , msg: "Document Not Found"})
         }
 
-        if(blogData.isPublished == false){
+        if(blogData.isPublished == false && blog.isPublished == true){
             blogData.isPublished = true
             blogData.publishedAt = new Date().toISOString()
         }

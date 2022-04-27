@@ -22,10 +22,13 @@ const createAuthor = async function (req , res) {
             return res.status(400).send( { status: false , msg: 'Please Enter Author Last Name '})
         }
 
+        if(!['Mr','Mrs','Miss'].includes(data.title)){
+            return res.status(400).send({status: false , msg: "Title Must be of these values [Mr, Mrs, Miss] "})
+        }
+
         if(!data.email){
             return res.status(400).send( { status: false , msg: "Please Enter Author's Email "})
         }
-
 
         const re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/ ; 
 
@@ -45,9 +48,7 @@ const createAuthor = async function (req , res) {
             return res.status(400).send({status: false , msg: "Please Enter Password of Author "})
         }
 
-        if(!['Mr','Mrs','Miss'].includes(data.title)){
-            return res.status(400).send({status: false , msg: "Title Must be of these values [Mr, Mrs, Miss] "})
-        }
+        
 
         let author = await authorModel.create(data)
         res.status(201).send({status: true , msg:"Author Created Successfully" , data: author})
