@@ -5,6 +5,16 @@ const createAuthor = async function (req , res) {
 
     try {
         let data = req.body
+        let re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/ ; 
+
+        //first method for email validation using regular expression
+
+        if(!re.test(data.email)){ 
+            res.status(400).send({status: false , msg: "Invalid EmailId"})
+        }
+
+        //second method for email validation using email validator
+
         if(validator.validate(data.email)){
             let author = await authorModel.create(data)
             res.status(201).send({status: true , data: author})
