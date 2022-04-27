@@ -67,9 +67,7 @@ const createBlog = async function (req , res) {
 const getBlogs = async function (req , res) {
     try{
         
-        if(!req.query){
-            return res.status(404).send({status: false , msg:''})
-        }
+        
         let queryData = req.query
 
         if(!(queryData.authorId || queryData.category || queryData.tags || queryData.subcategory ) ){
@@ -85,17 +83,18 @@ const getBlogs = async function (req , res) {
 
         queryData = req.query
 
-        if(!(ObjectId.isValid(queryData.authorId))){
-            return res.status(400).send( {status: false, msg: 'authorId is Invalid'})
+        if(queryData.authorId && !(ObjectId.isValid(queryData.authorId))){
+            return res.status(400).send( {status: false, msg: 'AuthorId is Invalid'})
         }
-
-        let authorId = await authorModel.findById(queryData.authorId)
-
-         if(!authorId) {
-            return res.status(400).send({status: false , msg:"Invalid Author-Id"})   
+        let authorId
+        if(queryData.authorId){
+             authorId = await authorModel.findById(queryData.authorId)
+             if(!authorId) {
+                return res.status(404).send({status: false , msg:"Author not Found"})   
+            }
         }
         
-        if(authorId){
+        
             queryData.isDeleted = false
             queryData.isPublished = true
             const blogData = await blogModel.find( queryData )
@@ -104,7 +103,7 @@ const getBlogs = async function (req , res) {
                 return res.status(404).send({status: false , msg: 'No Document Found'})
             } 
             return res.status(200).send({status: true , Data: blogData})
-        }
+        
 
     }
     catch(err){
