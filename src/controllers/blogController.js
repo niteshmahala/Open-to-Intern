@@ -186,30 +186,6 @@ const deleteByQuery =  async function ( req , res) {
             return res.status(400).send( {status: false , msg: "Invalid Filters"})
         }
 
-        if(blog.category == '' || typeof(blog.category) != String){
-            return res.status(400).send( {status: false , msg: 'category is Invalid'})
-        }
-        if(blog.authorId == '' || !(ObjectId.isValid(blog.authorId))){
-            return res.status(400).send( {status: false, msg: 'authorId is Invalid'})
-        }
-
-        let tagsArr = blog.tags
-        if(tagsArr.length == 0 || Array.isArray(tagsArr) || function check(tagsArr) {
-            return tagsArr.every(i => (typeof i === "string"));
-        } == false){
-            res.status(400).send({ status: false , msg: 'tags are Invalid'})
-        }
-
-        let subCatArr = blog.subcategory
-        if(subCatArr.length == 0 || Array.isArray(subCatArr) || !function check(subCatArr) {
-            return subCatArr.every(i => (typeof i === "string"));
-        } == false){
-            res.status(400).send({ status: false , msg: 'subcategory must be present'})
-        }
-
-        if(typeof(blog.isPublished) != Boolean){
-            res.status(400).send( { status: false , msg: 'isPublished is Invalid'})
-        }
         blog.isDeleted = false
         const blogData = await blogModel.find( blog )
 
