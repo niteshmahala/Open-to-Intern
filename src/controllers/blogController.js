@@ -12,7 +12,7 @@ const createBlog = async function (req , res) {
         let data = req.body
 
          // Validate the blog data is present or not
-        if (!data) { 
+        if (Object.keys(data).length == 0) { 
             return res.status(400).send({ status: false, msg: "Invalid request !! Please Provide Blog Details"})
           }
        
@@ -53,8 +53,8 @@ const createBlog = async function (req , res) {
         // else{
         //     data.publishedAt = ""
         // }
-        let author = await blogModel.create(data)
-        res.status(201).send({status: true , data: author})
+        let blog = await blogModel.create(data)
+        res.status(201).send({status: true , data: blog})
         
            
     } 
@@ -98,9 +98,9 @@ const getBlogs = async function (req , res) {
             queryData.isDeleted = false
             queryData.isPublished = true
             const blogData = await blogModel.find( queryData )
-            console.log(blogData);
+           // console.log(blogData);
             if(blogData.length == 0){
-                return res.status(404).send({status: false , msg: 'No Document Found'})
+                return res.status(404).send({status: false , msg: 'Document Not Found'})
             } 
             return res.status(200).send({status: true , Data: blogData})
         
@@ -177,30 +177,41 @@ const deleteByBlogId = async function ( req , res){
     }
 }
 
-const deleteByQuery =  async function ( req , res) {
 
+
+
+const deleteByQuery = async function (req, res) {
     try {
-        //category, authorid, tag name, subcategory name, unpublished
-        let blog = req.query
-        if(!(blog.category ||blog.authorId || blog.tags || blog.subcategory || blog.isPublished)){
-            return res.status(400).send( {status: false , msg: "Invalid Filters"})
+
+
+        let queryData = req.query
+        if (!(queryData.category || queryData.authorId || queryData.tags || queryData.subcategory)) {
+            return res.status(404).send({ status: false, msg: "Invalid Request...." })
         }
 
-        blog.isDeleted = false
-        const blogData = await blogModel.find( blog )
-
-        if(!blogData.length || blogData.isDeleted == true){
-            return res.status(404).send({status: false , msg: 'Data not found'})
+        if (queryData.authorId && !(ObjectId.isValid(queryData.authorId))){
+            return res.status(400).send( {status: false, msg: 'AuthorId is Invalid'})
         }
-        blogData.isDeleted = true
-        await blogData.save()
-        return res.status(200).send()
+
+        if(queryData.authorId){
+            let authorId = await authorModel.findById(queryData.authorId)
+            if(!authorId) {
+                return res.status(404).send({status: false , msg:"Author not Found"})   
+            }
+        }
         
-
-    } catch (err) {
-        res.status(500).send({status: false , error: err.message})    
+  
+      let deletedDate = new Date().toISOString()
+      queryData.isDeleted = false
+      let data1 = await blogModel.updateMany(queryData, { isDeleted: true, deletedAt: deletedDate }, { new: true })
+  
+      return res.status(200).send({ status: true, msg: data1 })
+    } catch (error) {
+      return res.status(500).send({ status: false, msg: error.message });
     }
-}
+  }
+
+
 
 module.exports.createBlog = createBlog
 module.exports.getBlogs = getBlogs
