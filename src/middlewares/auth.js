@@ -1,5 +1,7 @@
+const mongoose = require('mongoose');
 const jwt = require("jsonwebtoken");
 const blogModel = require("../models/blogModel");
+const ObjectId = mongoose.Types.ObjectId
 
 ///--------------- middleware for token verification 
 
@@ -30,12 +32,16 @@ let authorisation = async function (req, res , next){
 
     try {
 
+        if(!ObjectId.isValid(req.params.blogId)){
+            return res.status(400).send({status: false , msg:"Invalid Blog-Id"})
+        }
         
-        blogAuthorId = await blogModel.findById(req.param.blogId).select({ authorId: 1, _id: 0})
+        blog = await blogModel.findById(req.params.blogId)
+
         
         let decodedToken = req.decodedToken
-    
-        if(decodedToken.authorId != blogAuthorId)
+
+        if(decodedToken.authorId != blog.authorId)
             return res.status(401).send({  error: 'Author is not allowed to perform this task'})
     
         next()
@@ -49,7 +55,7 @@ let auth1 = async function (req, res , next){
 
     try {
 
-       /* let data = req.query
+        let data = req.query
 
         blogAuthorId = await blogModel.find(data).select({ authorId: 1, _id: 0})
         

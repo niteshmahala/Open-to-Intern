@@ -78,6 +78,11 @@ const getBlogs = async function (req , res) {
             return res.status(400).send( {status: false , msg: "Invalid Filters"})
         }
 
+        let decodedToken =  req.decodedToken
+        if(queryData.authorId != null && queryData.authorId != decodedToken.authorId ){
+            return res.status(400).send({status: false , msg: "Author is Different"})
+        }
+
         if(req.query.title && !req.query.body) delete req.query.title
         else if(req.query.body && !req.query.title) delete req.query.body
         else if(req.query.title && req.query.body){
@@ -91,7 +96,7 @@ const getBlogs = async function (req , res) {
             return res.status(400).send( {status: false, msg: 'AuthorId is Invalid'})
         }
         
-        if(queryData.authorId){
+        if(queryData.authorId != null){ 
              let authorId = await authorModel.findById(queryData.authorId)
              if(!authorId) {
                 return res.status(404).send({status: false , msg:"Author not Found"})   
@@ -130,9 +135,9 @@ const updateBlogs = async function ( req , res) {
 
         let blogId = req.params.blogId
 
-        if(!ObjectId.isValid(blogId)){
-            return res.status(400).send({status: false , msg:"Invalid Blog-Id"})
-        }
+        // if(!ObjectId.isValid(blogId)){
+        //     return res.status(400).send({status: false , msg:"Invalid Blog-Id"})
+        // }
 
         let blogData = await blogModel.findById(blogId)
         if(!blogData || blogData.isDeleted == true){
@@ -161,9 +166,9 @@ const updateBlogs = async function ( req , res) {
 const deleteByBlogId = async function ( req , res){
     try {
         let blogId = req.params.blogId
-        if(!ObjectId.isValid(blogId)){
-            return res.status(400).send({status: false , msg:"Invalid Blog-Id"})
-        }
+        // if(!ObjectId.isValid(blogId)){
+        //     return res.status(400).send({status: false , msg:"Invalid Blog-Id"})
+        // }
 
         let blogData =  await blogModel.findById(blogId)
         if(!blogData || blogData.isDeleted == true){
@@ -188,12 +193,14 @@ const deleteByBlogId = async function ( req , res){
 const deleteByQuery = async function (req, res) {
     try {
 
-       /* let queryData = req.query
-        if(queryData.authorId && req.decodedToken.authorId != queryData.authorId ){
-            return res.status(403).send({status: false , msg})
-        }
-        queryData.authorId = req.decodedToken.authorId 
-        */
+        let queryData = req.query
+        let decodedToken = req.decodedToken
+        if(queryData.authorId && decodedToken.authorId != queryData.authorId ){
+            return res.status(403).send({status: false , msg: "Author is not allowed to perform this task"})
+        } 
+        
+        queryData.authorId = decodedToken.authorId 
+        
 
         if (!(queryData.category || queryData.authorId || queryData.tags || queryData.subcategory)) {
             return res.status(404).send({ status: false, msg: "Invalid Request...." })

@@ -7,19 +7,16 @@ const createAuthor = async function (req , res) {
     try {
         let data = req.body
 
-        // if(!(data.fname && data.lname && data.title && data.email && data.password)){
-        //     res.status(400).send({status: false , msg: "missing mandatory field"})
-        // }
-
+        
         if(Object.keys(data).length == 0){
             return res.status(400).send( { status: false , msg: 'Invalid Request !! Please Enter Author Detail '})
         }
-
-        if(!data.fname){
+        
+        if(data.fname.length == 0){
             return res.status(400).send( { status: false , msg: 'Please Enter Author First Name '})
         }
 
-        if(!data.lname){
+        if(data.lname.length == 0 ){
             return res.status(400).send( { status: false , msg: 'Please Enter Author Last Name '})
         }
 
@@ -27,7 +24,7 @@ const createAuthor = async function (req , res) {
             return res.status(400).send({status: false , msg: "Title Must be of these values [Mr, Mrs, Miss] "})
         }
 
-        if(!data.email){
+        if(data.email.length == 0){
             return res.status(400).send( { status: false , msg: "Please Enter Author's Email "})
         }
 
@@ -45,8 +42,8 @@ const createAuthor = async function (req , res) {
             return res.status(400).send({status: false , msg: "User with this email is already exist "})
         }
 
-        if(!data.password){
-            return res.status(400).send({status: false , msg: "Please Enter Password of Author "})
+        if(data.password.length < 8){
+            return res.status(400).send({status: false , msg: "Password length is to short"})
         }
 
         
@@ -84,11 +81,11 @@ const loginAuthor = async function ( req, res) {
         if(userName !== '' && password !== ''){
 
             let re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/ ; 
-            let pwdRe  = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/;
+            //let pwdRe  = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/;
             if((re.test(userName)==true)){
             
                 let user = await authorModel.findOne( {email: userName , password: password});
-                console.log(user);
+                //console.log(user);
                 if(!user) res.status(400).send({  msg: "Invalid username or the password" })
     
                 let token = jwt.sign(
@@ -103,7 +100,7 @@ const loginAuthor = async function ( req, res) {
                 res.status(201).send({ status: true, data: token });
         
             }
-            else res.status(401).send({msg:'Invalid Username or Password'})
+            else res.status(401).send({msg:'Invalid Username'})
 
         }
         else res.status(400).send({msg:'UserName, Password are missing'})
@@ -118,3 +115,6 @@ const loginAuthor = async function ( req, res) {
 
 module.exports.createAuthor = createAuthor
 module.exports.loginAuthor = loginAuthor
+
+
+// stephen = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRob3JJZCI6IjYyNjg0YjdkYWZjZWQ2ZDk1NDBlYzViYiIsImJhdGNoIjoidXJhbml1bSIsIm9yZ2FuaXNhdGlvbiI6IkZ1bmN0aW9uVXAiLCJpYXQiOjE2NTExOTQ0MTh9.JW9nsL5tw6dOO9F92hsiT6421Fw9r9H7Y2lZM8a6Y1A
