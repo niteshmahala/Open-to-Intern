@@ -7,16 +7,17 @@ const createAuthor = async function (req , res) {
     try {
         let data = req.body
 
+        const dv = /[a-zA-Z]/;
         
         if(Object.keys(data).length == 0){
             return res.status(400).send( { status: false , msg: 'Invalid Request !! Please Enter Author Detail '})
         }
         
-        if(data.fname.length == 0){
+        if(data.fname.length == 0 || !dv.test(data.fname)){
             return res.status(400).send( { status: false , msg: 'Please Enter Author First Name '})
         }
 
-        if(data.lname.length == 0 ){
+        if(data.lname.length == 0  || !dv.test(data.lname)){
             return res.status(400).send( { status: false , msg: 'Please Enter Author Last Name '})
         }
 
@@ -41,8 +42,9 @@ const createAuthor = async function (req , res) {
         if(existingEmail){
             return res.status(400).send({status: false , msg: "User with this email is already exist "})
         }
-
-        if(data.password.length < 8){
+        let passRE = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+        //if(data.password.length < 8){
+         if(!passRE.test(data.password)){
             return res.status(400).send({status: false , msg: "Password length is to short"})
         }
 
@@ -81,7 +83,7 @@ const loginAuthor = async function ( req, res) {
         if(userName !== '' && password !== ''){
 
             let re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/ ; 
-            //let pwdRe  = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/;
+            
             if((re.test(userName)==true)){
             
                 let user = await authorModel.findOne( {email: userName , password: password});

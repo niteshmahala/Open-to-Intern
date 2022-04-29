@@ -16,14 +16,14 @@ const createBlog = async function (req , res) {
             return res.status(400).send({ status: false, msg: "Invalid request !! Please Provide Blog Details"})
           }
        
-
+          const dv = /[a-zA-Z]/;
         // Validate the title in blog
-        if ( data.title.length==0) {
+        if ( data.title.length==0 || !dv.test(data.title)) {
             return res.status(400).send({ status: false, msg: "Please Provide Blog Title"})
         }
 
         // Validate the Body in blog
-        if ( data.body.length==0) { 
+        if ( data.body.length==0 || !dv.test(data.body)) { 
             return res.status(400).send({ status: false, msg: "Please Provide Blog's Body"})
         }
 
@@ -37,8 +37,16 @@ const createBlog = async function (req , res) {
             return res.status(400).send({status: false , msg:"Invalid Author-Id"})
          }
 
-        if (data.category.length == 0) {
+        if (data.category.length == 0 || !dv.test(data.category)) {
             return res.status(400).send({ status: false, msg: "Please Provide Blog category"})
+        }
+
+        if( data.tags.length == 0 || !(data.tags.every(e => typeof e === 'string'))){
+            return res.status(400).send({ status: false, msg: "Please Provide Valid Tags"})
+        }
+
+        if( data.subcategory.length == 0 || data.subcategory.every(e => typeof(e) === 'string') == false){
+            return res.status(400).send({ status: false, msg: "Please Provide Valid Subcategory"})
         }
         
         
