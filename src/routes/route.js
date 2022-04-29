@@ -8,6 +8,7 @@ const blogController = require('../controllers/blogController')
 const mw = require('../middlewares/auth')
 
 router.post("/authors",  authorController.createAuthor)
+router.post("/loginAuthor", authorController.loginAuthor)
 router.post('/blogs', mw.authentication, blogController.createBlog)
 router.get('/blogs' , mw.authentication, blogController.getBlogs)
 router.put('/blogs/:blogId', mw.authentication, mw.authorisation, blogController.updateBlogs)

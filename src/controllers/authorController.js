@@ -79,15 +79,16 @@ const loginAuthor = async function ( req, res) {
             return res.status(400).send( { status: false , msg: 'Invalid Request !! Please Enter Author Email, Password '})
         }
 
-        let userName = data.emailId;
+        let userName = data.email;
         let password = data.password;
         if(userName !== '' && password !== ''){
-            let re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/ ; 
-            let pwdRe  = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,15}$/;
-            if(re.test(userName) && pwdRe.test(password)){
-            
-                let user = await authorModel.findOne( {emailId: userName , password: password});
 
+            let re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/ ; 
+            let pwdRe  = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,16}$/;
+            if((re.test(userName)==true)){
+            
+                let user = await authorModel.findOne( {email: userName , password: password});
+                console.log(user);
                 if(!user) res.status(400).send({  msg: "Invalid username or the password" })
     
                 let token = jwt.sign(
@@ -102,7 +103,7 @@ const loginAuthor = async function ( req, res) {
                 res.status(201).send({ status: true, data: token });
         
             }
-            else res.status(401).send({msg:'Invalid Usernmae or Password'})
+            else res.status(401).send({msg:'Invalid Username or Password'})
 
         }
         else res.status(400).send({msg:'UserName, Password are missing'})
