@@ -29,7 +29,8 @@ const createAuthor = async function (req , res) {
             return res.status(400).send( { status: false , msg: "Please Enter Author's Email "})
         }
 
-        const re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/ ; 
+        //const re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/ ;
+        const re = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,20}$/; 
 
         //first method for email validation using regular expression
 
@@ -42,10 +43,12 @@ const createAuthor = async function (req , res) {
         if(existingEmail){
             return res.status(400).send({status: false , msg: "User with this email is already exist "})
         }
-        let passRE = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+        //let passRE = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+        let passRE = /^(?!\S*\s)(?=\D*\d)(?=.*[!@#$%^&*])(?=[^A-Z]*[A-Z]).{8,15}$/;
+        
         //if(data.password.length < 8){
          if(!passRE.test(data.password)){
-            return res.status(400).send({status: false , msg: "Password length is to short"})
+            return res.status(400).send({status: false , msg: "Password format is not correct"})
         }
 
         
@@ -78,11 +81,12 @@ const loginAuthor = async function ( req, res) {
             return res.status(400).send( { status: false , msg: 'Invalid Request !! Please Enter Author Email, Password '})
         }
 
-        let userName = data.email;
+        let userName = data.email.toLowerCase();
         let password = data.password;
         if(userName !== '' && password !== ''){
 
-            let re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/ ; 
+            //let re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/ ; 
+            const re = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,20}$/; 
             
             if((re.test(userName)==true)){
             
@@ -119,4 +123,8 @@ module.exports.createAuthor = createAuthor
 module.exports.loginAuthor = loginAuthor
 
 
-// stephen = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRob3JJZCI6IjYyNjg0YjdkYWZjZWQ2ZDk1NDBlYzViYiIsImJhdGNoIjoidXJhbml1bSIsIm9yZ2FuaXNhdGlvbiI6IkZ1bmN0aW9uVXAiLCJpYXQiOjE2NTExOTQ0MTh9.JW9nsL5tw6dOO9F92hsiT6421Fw9r9H7Y2lZM8a6Y1A
+// stephen = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRob3JJZCI6IjYyNjg0YjdkYWZjZWQ2ZDk1NDBlYzViYiIsImJhdGNoIjoidXJhbml1bSIsIm9yZ2FuaXNhdGlvbiI6IkZ1bmN0aW9uVXAiLCJpYXQiOjE2NTExOTQ0MTh9.JW9nsL5tw6dOO9F92hsiT6421Fw9r9H7Y2lZM8a6Y1A 
+
+
+//I use the following script for min 8 letter password, 
+//with at least a symbol, upper and lower case letters and a number

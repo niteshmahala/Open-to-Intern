@@ -5,15 +5,8 @@ const { query } = require('express');
 const ObjectId = mongoose.Types.ObjectId
 
 
-const check = function(x) {
-    return x.every(i => (typeof i === "string"));
-}
-
-
-
 const createBlog = async function (req , res) {
 
-    
     try {
         
         let data = req.body
@@ -22,22 +15,6 @@ const createBlog = async function (req , res) {
         if (Object.keys(data).length == 0) { 
             return res.status(400).send({ status: false, msg: "Invalid request !! Please Provide Blog Details"})
           }
-
-          // Validate that authorid is coming or not in blog
-          if (data.authorId.length==0) {
-            return res.status(400).send({ status: false, msg: "Please Provide Blog Author Id"})
-        }
-        data.authorId = data.authorId.trim()
-        // Validate the authorId
-        if(!ObjectId.isValid(data.authorId)) {
-            return res.status(400).send({status: false , msg:"Invalid Author-Id"})
-         }
-
-         // authorization
-         let decodedToken =  req.decodedToken
-        if( data.authorId != decodedToken.authorId ){
-            return res.status(400).send({status: false , msg: "Author is Different"})
-        }
        
           const dv = /[a-zA-Z]/;
         // Validate the title in blog
@@ -50,30 +27,27 @@ const createBlog = async function (req , res) {
             return res.status(400).send({ status: false, msg: "Please Provide Blog's Body"})
         }
 
+        // Validate that authorid is coming or not in blog
+        if (data.authorId.length==0) {
+            return res.status(400).send({ status: false, msg: "Please Provide Blog Author Id"})
+        }
+
+        // Validate the authorId
+        if(!ObjectId.isValid(data.authorId)) {
+            return res.status(400).send({status: false , msg:"Invalid Author-Id"})
+         }
 
         if (data.category.length == 0 || !dv.test(data.category)) {
             return res.status(400).send({ status: false, msg: "Please Provide Blog category"})
         }
-        data.category = data.category.toLowerCase().trim()
-        
-        if( data.tags != undefined && check(data.tags) == false){
+
+        if( data.tags.length == 0 || !(data.tags.every(e => typeof e === 'string'))){
             return res.status(400).send({ status: false, msg: "Please Provide Valid Tags"})
         }
        
 
-        if( data.subcategory != undefined &&  check(data.subcategory)== false){
+        if( data.subcategory.length == 0 || data.subcategory.every(e => typeof(e) === 'string') == false){
             return res.status(400).send({ status: false, msg: "Please Provide Valid Subcategory"})
-        }
-
-        for (let key in data) {
-            if (Array.isArray(data[key])) {
-                let arr=[];
-                for (let i = 0; i < data[key].length; i++) {
-                        if(data[key][i].trim().length>0)
-                    arr.push(data[key][i].toLowerCase().trim())
-                }
-                data[key] = [...arr];
-            }
         }
         
         
@@ -85,7 +59,9 @@ const createBlog = async function (req , res) {
         if(data.isPublished == true){
             data.publishedAt =  new Date().toISOString()
         }
-        
+        // else{
+        //     data.publishedAt = ""
+        // }
         let blog = await blogModel.create(data)
         res.status(201).send({status: true , data: blog})
         
@@ -93,9 +69,7 @@ const createBlog = async function (req , res) {
     } 
     catch (err) {
         res.status(500).send({status: false , error: err.message})
-    } 
-
-   
+    }
 }
 
 
@@ -104,7 +78,7 @@ const getBlogs = async function (req , res) {
         
         
         let queryData = req.query
-
+        //console.log(queryData + " " + Object.keys(queryData).length)
         if (Object.keys(queryData).length == 0) { 
             return res.status(400).send({ status: false, msg: "Invalid request !! Please Provide Blog Details"})
           }
@@ -112,7 +86,7 @@ const getBlogs = async function (req , res) {
         if(!(queryData.authorId || queryData.category || queryData.tags || queryData.subcategory ) ){
             return res.status(400).send( {status: false , msg: "Invalid Filters"})
         }
-        // Authorization
+
         let decodedToken =  req.decodedToken
         if(queryData.authorId != undefined && queryData.authorId != decodedToken.authorId ){
             return res.status(400).send({status: false , msg: "Author is Different"})
@@ -127,42 +101,22 @@ const getBlogs = async function (req , res) {
         }
 
         queryData = req.query
-    
+
         if(queryData.authorId && !(ObjectId.isValid(queryData.authorId))){
             return res.status(400).send( {status: false, msg: 'AuthorId is Invalid'})
         }
         
-        if(queryData.authorId ){ 
+        if(queryData.authorId != null){ 
              let authorId = await authorModel.findById(queryData.authorId)
              if(!authorId) {
                 return res.status(404).send({status: false , msg:"Author not Found"})   
             }
         }
         
-            if(queryData.category){
-                queryData.category = queryData.category.toLowerCase().trim()
-            }
-
-            if(queryData.tags) queryData.tags = queryData.tags.toLowerCase().trim()
-            if(queryData.subcategory) queryData.subcategory = queryData.subcategory.toLowerCase().trim()
-
-            for (let key in queryData) {
-                if (Array.isArray(queryData[key])) {
-                    let arr=[];
-                    for (let i = 0; i < queryData[key].length; i++) {
-                            if(queryData[key][i].trim().length>0)
-                        arr.push(queryData[key][i].toLowerCase().trim())
-                    }
-                    queryData[key] = [...arr];
-                }
-            }
-
-            
-          console.log(queryData)
-            
+        
             queryData.isDeleted = false
             queryData.isPublished = true
-            const blogData = await blogModel.find(queryData)
+            const blogData = await blogModel.find( queryData )
            // console.log(blogData);
             if(blogData.length == 0){
                 return res.status(404).send({status: false , msg: 'Document Not Found'})
@@ -173,8 +127,8 @@ const getBlogs = async function (req , res) {
     }
     catch(err){
         res.status(500).send({status: false , error: err.message})
-    } 
-    
+    }
+
 }
 
 const updateBlogs = async function ( req , res) {
@@ -272,14 +226,6 @@ const deleteByQuery = async function (req, res) {
                 return res.status(404).send({status: false , msg:"Author not Found"})   
             }
         }
-
-        if(queryData.category){
-            queryData.category = queryData.category.toLowerCase().trim()
-        }
-
-        if(queryData.tags) queryData.tags = queryData.tags.toLowerCase().trim()
-        if(queryData.subcategory) queryData.subcategory = queryData.subcategory.toLowerCase().trim()
-
         
   
       let deletedDate = new Date().toISOString()

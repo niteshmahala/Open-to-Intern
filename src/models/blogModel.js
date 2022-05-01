@@ -14,11 +14,13 @@ const blogSchema = new mongoose.Schema({
     },
     authorId: {
         required: true,
+        trim: true,
         type: ObjectId,
         ref: 'Author'
     },
     tags: {
         type: [String]
+        
     },
     category: {
         type: String,
@@ -26,7 +28,8 @@ const blogSchema = new mongoose.Schema({
         required: true,   
     },
     subcategory: {
-        type:[String]
+        type:[String],
+
     },
 
     deletedAt: String,
