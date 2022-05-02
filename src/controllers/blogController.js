@@ -201,7 +201,7 @@ const updateBlogs = async function ( req , res) {
         }
 
         if(blogData.isPublished == false && blog.isPublished == true){
-            blogData.isPublished = true
+            blogData.isPublished = "true";
             blogData.publishedAt = new Date().toISOString()
         }
         await blogData.save()
