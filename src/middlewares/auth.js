@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const jwt = require("jsonwebtoken");
-const blogModel = require("../models/blogModel");
+const internmodel = require("../models/internmodel");
 const ObjectId = mongoose.Types.ObjectId
 
 ///--------------- middleware for token verification 
@@ -36,7 +36,7 @@ let authorisation = async function (req, res , next){
             return res.status(400).send({status: false , msg:"Invalid Blog-Id"})
         }
         
-        blog = await blogModel.findById(req.params.blogId)
+        blog = await internmodel.findById(req.params.blogId)
         
         let decodedToken = req.decodedToken
 

@@ -2,16 +2,12 @@
    
 const express = require('express');
 const router = express.Router();
-const authorController= require("../controllers/authorController")
-const blogController = require('../controllers/blogController')
+const collegecontroller= require("../controllers/collegecontroller")
+const interncontroller = require('../controllers/interncontroller')
 const mw = require('../middlewares/auth')
 
-router.post("/authors",  authorController.createAuthor)
-router.post("/loginAuthor", authorController.loginAuthor)
-router.post('/blogs', mw.authentication, blogController.createBlog)
-router.get('/blogs' , mw.authentication, blogController.getBlogs)
-router.put('/blogs/:blogId', mw.authentication, mw.authorisation, blogController.updateBlogs)
-router.delete('/blogsById/:blogId', mw.authentication, mw.authorisation, blogController.deleteByBlogId)
-router.delete('/blogs', mw.authentication, blogController.deleteByQuery)
+router.post("/functionup/colleges",  collegecontroller.createcollege)
+router.post('/functionup/interns', interncontroller.createintern)
+router.get('/functionup/collegeDetails' , interncontroller.getintern)
 
 module.exports = router;
