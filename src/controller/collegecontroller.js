@@ -20,8 +20,12 @@ const createCollege = async function (req, res) {
   if (!regex1.test(data.fullName)) return res.status(400).send({ status: false, message: "FULLNAME SHOULD ONLY CONTAIN ALPHABETS AND LENGTH MUST BE IN BETWEEN 2-100"})
   if (!linkregex.test(data.logoLink)) return res.status(400).send({ status: false, message: "LINK SHOULD BE A VALID S3 URL" })
   if (data.isDeleted == true) return res.status(400).send({ status: false, message: "CANT DELETE BEFORE CREATION" })
+
+  // clg name is same 
   let duplicate = await CollegeModel.find({name:data.name})
   if(duplicate.length!=0){return res.status(400).send({ status: false, message: "NAME ALREADY EXISTS" })}
+
+  // creating clg
   const createData = await CollegeModel.create(data)
   res.status(201).send({ status: true, College: createData })
 }
