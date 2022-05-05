@@ -21,20 +21,28 @@ const createIntern = async function (req, res) {
         if (!mobileregex.test(data.mobile)) return res.status(400).send({ status: false, message: "MOBILE NO. SHOULD BE IN VALID FORMAT" })
         if (!emailregex.test(data.email)) return res.status(400).send({ status: false, message: "EMAIL SHOULD BE IN VALID FORMAT" })
         if (data.isDeleted == true) return res.status(400).send({ status: false, message: "CANT DELETE BEFORE CREATION" })
+
+        // here we are checking that have we applied for this clg or not
         let intern = await InternModel.findOne({ name: data.name, email: data.email, mobile: data.mobile })
         if (intern) {
             if (intern.collegeId == data.collegeId) { return res.status(400).send({ status: false, message: "You have already applied for this college" }) }
         }
+
+        // mobile no.is unique or not
         let duplicateNumber = await InternModel.findOne({ mobile: data.mobile })
         if (duplicateNumber) return res.status(400).send({ status: false, message: "MOBILE NUMBER ALREADY EXISTS" })
 
+        // valid object id or not
         if (!isValidObjectId(data.collegeId)) {
             return res.status(400).send({ status: false, message: "NOT A VALID COLLEGE ID" })
         }
+
+        // clg data is deleted or not
         let college = await CollegeModel.findById({ _id: data.collegeId })
         if (!college) { return res.status(404).send({ status: false, message: "NO SUCH COLLEGE IS PRESENT" }) }
         if(college.isDeleted==true){ return res.status(404).send({ status: false, message: "COLLEGE IS DELETED" }) }
 
+        // email is unique or not
         let duplicate = await InternModel.findOne({ email: data.email })
         if (duplicate) { return res.status(400).send({ status: false, message: "EMAIL ALREADY EXISTS" }) }
 
@@ -48,23 +56,28 @@ const createIntern = async function (req, res) {
 
 const getList = async function (req, res) {
     try {
-
+ //checking that data is present in query or not
         const data = req.query.collegeName
 
         if (!data) return res.status(400).send({ status: false, message: "SHOULD GIVE ANY QUERY" })
 
+        // the data we are  finding is deleted or not
         const getData = await CollegeModel.findOne({ name: data })
         if (!getData) return res.status(404).send({ status: false, message: "NO SUCH COLLEGE IS PRESENT" })
-        if (getData.isDeleted == true) return res.status(400).send({ status: false, message: "THE COLLEGE YOU ARE TRYING TO ENTER IS DELETED" })
+        if (getData.isDeleted == true) return res.status(404).send({ status: false, message: "THE COLLEGE YOU ARE TRYING TO ENTER IS DELETED" })
 
+
+        //here we are finding intern data through clg id
         const Intern1 = await InternModel.find({ collegeId: getData._id })
 
-        if (Intern1.length == 0) return res.status(400).send({ status: false, message: "Intern is not present" })
+        if (Intern1.length == 0) return res.status(404).send({ status: false, message: "Intern is not present" })
 
         // for (let i = 0; i < Intern1.length; i++) {
 
         //     if (Intern1[i].isDeleted == false) {
 
+
+        //here we are checking that interns data is deleted or not
         let Intern = Intern1.filter(x => x.isDeleted == false)
         if (Intern.length == 0) return res.status(400).send({ status: false, message: "ALL INTERNS ARE DELETED" })
 
