@@ -72,7 +72,7 @@ const getList = async function (req, res) {
 
         //here we are finding intern data through clg id
         const Intern1 = await InternModel.find({ collegeName: getData.name})
-console.log(Intern1);
+        console.log(Intern1);
         if (!Intern1) return res.status(404).send({ status: false, message: "Intern is not present" })
 
         // for (let i = 0; i < Intern1.length; i++) {
