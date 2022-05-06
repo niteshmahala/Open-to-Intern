@@ -7,7 +7,7 @@ const createCollege = async function (req, res) {
   const data = req.body
   if (Object.keys(data).length === 0) return res.status(400).send({ status: false, message: "Data is required" })
   let regex = /^[a-zA-Z ]{2,30}$/
-  let regex1 = /^[a-zA-Z ]{2,100}$/
+  let regex1 = /^[a-zA-Z, ]{2,100}$/
   let linkregex=/^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/
   //let linkregex=/(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/
   if (!data.name) return res.status(400).send({ status: false, message: "name is required" })

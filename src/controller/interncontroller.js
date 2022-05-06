@@ -1,7 +1,7 @@
 const InternModel = require('../models/Intern Model')
 const mongoose = require('mongoose');
 const CollegeModel = require('../models/College Model');
-const isValidObjectId = (objectId) => { return mongoose.Types.ObjectId.isValid(objectId) };
+// const isValidObjectId = (objectId) => { return mongoose.Types.ObjectId.isValid(objectId) };
 
 
 
@@ -12,10 +12,10 @@ const createIntern = async function (req, res) {
         let regex = /^[a-zA-Z ]{2,30}$/
         let mobileregex = /^[0]?[6789]\d{9}$/
         let emailregex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
-        if (!data.name) { res.status(400).send({ status: false, message: "KINDLY ADD name" }) }
-        if (!data.email) { res.status(400).send({ status: false, message: "KINDLY ADD email" }) }
-        if (!data.mobile) { res.status(400).send({ status: false, message: "KINDLY ADD mobile" }) }
-        if (!data.collegeId) { res.status(400).send({ status: false, message: "KINDLY ADD collegeId" }) }
+        if (!data.name) {return res.status(400).send({ status: false, message: "KINDLY ADD name" }) }
+        if (!data.email) { return res.status(400).send({ status: false, message: "KINDLY ADD email" }) }
+        if (!data.mobile) { return res.status(400).send({ status: false, message: "KINDLY ADD mobile" }) }
+        if (data.collegeName.length == 0) { return res.status(400).send({ status: false, message: "KINDLY ADD college name" }) }
         //REGEX VALIDATIONS
         if (!regex.test(data.name)) return res.status(400).send({ status: false, message: "NAME SHOULD ONLY CONTAIN ALPHABETS AND LENGTH MUST BE IN BETWEEN 2-30" })
         if (!mobileregex.test(data.mobile)) return res.status(400).send({ status: false, message: "MOBILE NO. SHOULD BE IN VALID FORMAT" })
@@ -25,32 +25,34 @@ const createIntern = async function (req, res) {
         // here we are checking that have we applied for this clg or not
         let intern = await InternModel.findOne({ name: data.name, email: data.email, mobile: data.mobile })
         if (intern) {
-            if (intern.collegeId == data.collegeId) { return res.status(400).send({ status: false, message: "You have already applied for this college" }) }
+            if (intern.collegeName == data.collegeName) { return res.status(400).send({ status: false, message: "You have already applied for this college" }) }
         }
 
         // mobile no.is unique or not
         let duplicateNumber = await InternModel.findOne({ mobile: data.mobile })
         if (duplicateNumber) return res.status(400).send({ status: false, message: "MOBILE NUMBER ALREADY EXISTS" })
 
-        // valid object id or not
-        if (!isValidObjectId(data.collegeId)) {
-            return res.status(400).send({ status: false, message: "NOT A VALID COLLEGE ID" })
-        }
+        // valid clg name or not
 
-        // clg data is deleted or not
-        let college = await CollegeModel.findById({ _id: data.collegeId })
-        if (!college) { return res.status(404).send({ status: false, message: "NO SUCH COLLEGE IS PRESENT" }) }
-        if(college.isDeleted==true){ return res.status(404).send({ status: false, message: "COLLEGE IS DELETED" }) }
+       
 
         // email is unique or not
         let duplicate = await InternModel.findOne({ email: data.email })
         if (duplicate) { return res.status(400).send({ status: false, message: "EMAIL ALREADY EXISTS" }) }
 
+
+ // clg data is deleted or not
+ let college = await CollegeModel.find({name: data.collegeName})
+ if (!college) { return res.status(404).send({ status: false, message: "NO SUCH COLLEGE IS PRESENT" }) }
+ if(college.isDeleted==true){ return res.status(404).send({ status: false, message: "COLLEGE IS DELETED" }) }
+        // let clg = await CollegeModel.findone({ name: data.collegeName})
+        if (college) {
         let saved = await InternModel.create(data)
-        res.status(201).send({ status: true, Intern: saved })
+        return res.status(201).send({ status: true, Intern: saved })
+        }
     }
     catch (error) {
-        res.status(500).send({ status: false, message: error.message })
+       return res.status(500).send({ status: false, message: error.message })
     }
 }
 
@@ -63,14 +65,15 @@ const getList = async function (req, res) {
 
         // the data we are  finding is deleted or not
         const getData = await CollegeModel.findOne({ name: data })
+        console.log(getData);
         if (!getData) return res.status(404).send({ status: false, message: "NO SUCH COLLEGE IS PRESENT" })
         if (getData.isDeleted == true) return res.status(404).send({ status: false, message: "THE COLLEGE YOU ARE TRYING TO ENTER IS DELETED" })
 
 
         //here we are finding intern data through clg id
-        const Intern1 = await InternModel.find({ collegeId: getData._id })
-
-        if (Intern1.length == 0) return res.status(404).send({ status: false, message: "Intern is not present" })
+        const Intern1 = await InternModel.find({ collegeName: getData.name})
+console.log(Intern1);
+        if (!Intern1) return res.status(404).send({ status: false, message: "Intern is not present" })
 
         // for (let i = 0; i < Intern1.length; i++) {
 
@@ -79,7 +82,8 @@ const getList = async function (req, res) {
 
         //here we are checking that interns data is deleted or not
         let Intern = Intern1.filter(x => x.isDeleted == false)
-        if (Intern.length == 0) return res.status(400).send({ status: false, message: "ALL INTERNS ARE DELETED" })
+        console.log(Intern);
+        if (!Intern) return res.status(400).send({ status: false, message: "ALL INTERNS ARE DELETED" })
 
         //const Intern = await InternModel.find({ collegeId: getData._id, isDeleted: false }).select({ name: 1, mobile: 1, email: 1 })
 

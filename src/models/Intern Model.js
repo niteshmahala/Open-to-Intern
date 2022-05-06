@@ -1,14 +1,15 @@
 const mongoose=require('mongoose')
-const ObjectId = mongoose.Schema.Types.ObjectId
+// const ObjectId = mongoose.Schema.Types.ObjectId
 
 const InternSchema = new mongoose.Schema(
     {
         name: {type:String,required:true,trim:true}, 
         email: {type:String, unique:true,required:true,trim:true}, 
         mobile: {type:Number,  required:true, unique:true,trim:true}, 
-        collegeId: {
-            type:ObjectId,
-            ref:"College"},
+        collegeName: {
+            type:String,
+            trim:true,
+            required: true},
              isDeleted: {type:Boolean, default: false}
     }
 )
