@@ -2,8 +2,7 @@ const CollegeModel = require("../models/College Model")
 
 
 const createCollege = async function (req, res) {
-
-
+try {
   const data = req.body
   if (Object.keys(data).length === 0) return res.status(400).send({ status: false, message: "Data is required" })
   let regex = /^[a-zA-Z ]{2,30}$/
@@ -22,12 +21,17 @@ const createCollege = async function (req, res) {
   if (data.isDeleted == true) return res.status(400).send({ status: false, message: "CANT DELETE BEFORE CREATION" })
 
   // clg name is same 
-  let duplicate = await CollegeModel.find({name:data.name})
-  if(duplicate.length!=0){return res.status(400).send({ status: false, message: "NAME ALREADY EXISTS" })}
+  let duplicate = await CollegeModel.findone({name:data.name})
+  if(duplicate.length!=0){return res.status(400).send({ status: false, message: " colege NAME is ALREADY EXISTS" })}
 
   // creating clg
   const createData = await CollegeModel.create(data)
-  res.status(201).send({ status: true, College: createData })
+  res.status(201).send({ status: true, Data: createData })
+}
+catch (error){
+  return res.status(500).send({ status: false, message: error.message })
+}
+
 }
 
 

@@ -42,13 +42,13 @@ const createIntern = async function (req, res) {
 
 
  // clg data is deleted or not
- let college = await CollegeModel.find({name: data.collegeName})
+ let college = await CollegeModel.findOne({name: data.collegeName})
  if (!college) { return res.status(404).send({ status: false, message: "NO SUCH COLLEGE IS PRESENT" }) }
  if(college.isDeleted==true){ return res.status(404).send({ status: false, message: "COLLEGE IS DELETED" }) }
         // let clg = await CollegeModel.findone({ name: data.collegeName})
         if (college) {
         let saved = await InternModel.create(data)
-        return res.status(201).send({ status: true, Intern: saved })
+        return res.status(201).send({ status: true, Data: saved })
         }
     }
     catch (error) {
@@ -63,16 +63,15 @@ const getList = async function (req, res) {
 
         if (!data) return res.status(400).send({ status: false, message: "SHOULD GIVE ANY QUERY" })
 
-        // the data we are  finding is deleted or not
         const getData = await CollegeModel.findOne({ name: data })
-        console.log(getData);
+        // console.log(getData);
         if (!getData) return res.status(404).send({ status: false, message: "NO SUCH COLLEGE IS PRESENT" })
         if (getData.isDeleted == true) return res.status(404).send({ status: false, message: "THE COLLEGE YOU ARE TRYING TO ENTER IS DELETED" })
 
 
         //here we are finding intern data through clg id
         const Intern1 = await InternModel.find({ collegeName: getData.name})
-        console.log(Intern1);
+        // console.log(Intern1);
         if (!Intern1) return res.status(404).send({ status: false, message: "Intern is not present" })
 
         // for (let i = 0; i < Intern1.length; i++) {
@@ -82,7 +81,7 @@ const getList = async function (req, res) {
 
         //here we are checking that interns data is deleted or not
         let Intern = Intern1.filter(x => x.isDeleted == false)
-        console.log(Intern);
+        // console.log(Intern);
         if (!Intern) return res.status(400).send({ status: false, message: "ALL INTERNS ARE DELETED" })
 
         //const Intern = await InternModel.find({ collegeId: getData._id, isDeleted: false }).select({ name: 1, mobile: 1, email: 1 })
